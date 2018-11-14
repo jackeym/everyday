@@ -35,6 +35,26 @@ public class FindKthToTail {
         if (count < a) return null; 
         return pre;
     }
+
+    /**
+     * Leetcode:给定一个链表，删除链表的倒数第 n 个节点，并且返回链表的头结点。
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        if (head == null || n < 0) {
+            return null;
+        }
+        
+        ListNode node1 = head, node2 = head;
+        while (node1 != null){
+            node1 = node1.next;
+            if (n < 1 && node2!=null){
+                node2 = node2.next;
+            }
+            n--;
+        }
+        node2.next = node2.next.next;
+        return head;
+    }
     
     
     public class ListNode{

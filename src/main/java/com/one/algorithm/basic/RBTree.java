@@ -5,12 +5,12 @@ package com.one.algorithm.basic;
  * 1、每个节点不是红色就是黑色的；
  * 2、根节点总是黑色的；
  * 3、所有的叶节点都是是黑色的（红黑树的叶子节点都是空节点（NIL或者NULL））；
- * 4、如果节点是红色的，则它的子节点必须是黑色的（反之不一定）；
- * 5、从根节点到叶节点或空子节点的每条路径，必须包含相同数目的黑色节点（即相同的黑色高度）。
+ * 4、父子节点之间不能出现两个连续的红节点；
+ * 5、任何一个节点向下遍历到其子孙的叶子节点，所经过的黑节点个数必须相等。
  * @author: one
  */
 public class RBTree<T extends Comparable<T>> {
-    private final RBTreeNode<T> root;
+    private RBTreeNode<T> root;
     //node number
     private java.util.concurrent.atomic.AtomicLong size =
             new java.util.concurrent.atomic.AtomicLong(0);
@@ -48,7 +48,7 @@ public class RBTree<T extends Comparable<T>> {
      * @return
      */
     private RBTreeNode<T> getRoot(){
-        return root.getLeft();
+        return root;
     }
 
     /*
@@ -79,7 +79,7 @@ public class RBTree<T extends Comparable<T>> {
 
         if(parent==null){//node pointer to root
             //right  raise to root node
-            root.setLeft(right);
+            root = right;
             setParent(right,null);
         }else{
             if(parent.getLeft()==node){
@@ -120,7 +120,7 @@ public class RBTree<T extends Comparable<T>> {
 
         if(parent==null){//node pointer to root
             //right  raise to root node
-            root.setLeft(left);
+            root = left;
             setParent(left,null);
         }else{
             if(parent.getLeft()==node){
@@ -150,21 +150,156 @@ public class RBTree<T extends Comparable<T>> {
      * @return
      */
     public T find(T value){
-        RBTreeNode<T> dataRoot = getRoot();
-        while(dataRoot!=null){
-            int cmp = dataRoot.getValue().compareTo(value);
+        RBTreeNode<T> node = getRoot();
+        while(node!=null){
+            int cmp = node.getValue().compareTo(value);
             if(cmp<0){
-                dataRoot = dataRoot.getRight();
+                node = node.getRight();
             }else if(cmp>0){
-                dataRoot = dataRoot.getLeft();
+                node = node.getLeft();
             }else{
-                return dataRoot.getValue();
+                return node.getValue();
             }
         }
         return null;
     }
 
 
+    public T addNode(T value){
+        RBTreeNode<T> t = new RBTreeNode<T>(value);
+        return addNode(t);
+    }
+
+    private T addNode(RBTreeNode<T> node){
+        node.setLeft(null);
+        node.setRight(null);
+        node.setRed(true);
+        setParent(node,null);
+        if(root==null){
+            root = node;
+            //root node is black
+            node.setRed(false);
+            size.incrementAndGet();
+        }else{
+            RBTreeNode<T> x = findParentNode(node);
+            int cmp = x.getValue().compareTo(node.getValue());
+
+            if(this.overrideMode && cmp==0){
+                T v = x.getValue();
+                x.setValue(node.getValue());
+                return v;
+            }else if(cmp==0){
+                //value exists,ignore this node
+                return x.getValue();
+            }
+
+            setParent(node,x);
+
+            if(cmp>0){
+                x.setLeft(node);
+            }else{
+                x.setRight(node);
+            }
+
+            fixInsert(node);
+            size.incrementAndGet();
+        }
+        return null;
+    }
+
+    private RBTreeNode<T> findParentNode(RBTreeNode<T> x){
+        RBTreeNode<T> node = getRoot();
+        RBTreeNode<T> current  = null;  // x的父节点
+
+        while(node!=null){
+            current = node;
+            int cmp = node.getValue().compareTo(x.getValue());
+            if(cmp==0){
+                return node;
+            }
+            if(cmp>0){
+                node = node.getLeft();
+            }else if(cmp<0){
+                node = node.getRight();
+            }
+        }
+        return current;
+    }
+
+    /**
+     * 新插入的节点是红色的，插入修复操作如果遇到父节点的颜色为黑则修复操作结束。也就是说，只有在父节点为红色节点的时候是需要插入修复操作的。
+     * 插入修复操作分为以下的三种情况，而且新插入的节点的父节点都是红色的：
+     *    1.叔叔节点也为红色。
+     *    2.叔叔节点为空，且祖父节点、父节点和新节点处于一条斜线上。
+     *    3.叔叔节点为空，且祖父节点、父节点和新节点不处于一条斜线上。
+     */
+    private void fixInsert(RBTreeNode<T> x){
+        RBTreeNode<T> parent = x.getParent();
+
+        while(parent!=null && parent.isRed()){
+            RBTreeNode<T> uncle = getUncle(x);
+            if(uncle==null){//need to rotate
+                RBTreeNode<T> ancestor = parent.getParent();
+                //ancestor is not null due to before before add,tree color is balance
+                if(parent == ancestor.getLeft()){
+                    boolean isRight = x == parent.getRight();
+                    if(isRight){
+                        rotateLeft(parent);
+                    }
+                    rotateRight(ancestor);
+
+                    if(isRight){
+                        x.setRed(false);
+                        parent=null;//end loop
+                    }else{
+                        parent.setRed(false);
+                    }
+                    ancestor.setRed(true);
+                }else{
+                    boolean isLeft = x == parent.getLeft();
+                    if(isLeft){
+                        rotateRight(parent);
+                    }
+                    rotateLeft(ancestor);
+
+                    if(isLeft){
+                        x.setRed(false);
+                        parent=null;//end loop
+                    }else{
+                        parent.setRed(false);
+                    }
+                    ancestor.setRed(true);
+                }
+            }else{//uncle is red
+                parent.setRed(false);
+                uncle.setRed(false);
+                parent.getParent().setRed(true);
+                x=parent.getParent();
+                parent = x.getParent();
+            }
+        }
+        getRoot().makeBlack();
+        getRoot().setParent(null);
+    }
+
+    /**
+     * get uncle node
+     * @param node
+     * @return
+     */
+    private RBTreeNode<T> getUncle(RBTreeNode<T> node){
+        RBTreeNode<T> parent = node.getParent();
+        RBTreeNode<T> ancestor = parent.getParent();
+        if(ancestor==null){
+            return null;
+        }
+        if(parent == ancestor.getLeft()){
+            return ancestor.getRight();
+        }else{
+            return ancestor.getLeft();
+        }
+    }
+    
     /**
      * 说明：
      * 1、被删除的节点没有儿子，即删除的是叶子节点。那么，直接删除该节点。
@@ -187,7 +322,7 @@ public class RBTree<T extends Comparable<T>> {
      */
     public T remove(T value){
         RBTreeNode<T> dataRoot = getRoot();
-        RBTreeNode<T> parent = root;
+        RBTreeNode<T> parent = dataRoot;
 
         while(dataRoot!=null){
             int cmp = dataRoot.getValue().compareTo(value);
@@ -199,28 +334,34 @@ public class RBTree<T extends Comparable<T>> {
                 dataRoot = dataRoot.getLeft();
             }else{
                 if(dataRoot.getRight()!=null){
+                    //找到后继节点
                     RBTreeNode<T> min = removeMin(dataRoot.getRight());
                     //x used for fix color balance
                     RBTreeNode<T> x = min.getRight()==null ? min.getParent() : min.getRight();
                     boolean isParent = min.getRight()==null;
-
+                    
+                    //待删除节点的左节点
                     min.setLeft(dataRoot.getLeft());
                     setParent(dataRoot.getLeft(),min);
+                    
+                    // 后继节点
                     if(parent.getLeft()==dataRoot){
                         parent.setLeft(min);
                     }else{
                         parent.setRight(min);
                     }
                     setParent(min,parent);
-
-                    boolean curMinIsBlack = min.isBlack();
-                    //inherit dataRoot's color
-                    min.setRed(dataRoot.isRed());
-
+                    
+                    //待删除节点的右节点
                     if(min!=dataRoot.getRight()){
                         min.setRight(dataRoot.getRight());
                         setParent(dataRoot.getRight(),min);
                     }
+                    
+                    boolean curMinIsBlack = min.isBlack();
+                    //inherit dataRoot's color
+                    min.setRed(dataRoot.isRed());
+
                     //remove a black node,need fix color
                     if(curMinIsBlack){
                         if(min!=dataRoot.getRight()){
@@ -239,7 +380,7 @@ public class RBTree<T extends Comparable<T>> {
                         parent.setRight(dataRoot.getLeft());
                     }
                     //current node is black and tree is not empty
-                    if(dataRoot.isBlack() && !(root.getLeft()==null)){
+                    if(dataRoot.isBlack() && !(root==null)){
                         RBTreeNode<T> x = dataRoot.getLeft()==null
                                 ? parent :dataRoot.getLeft();
                         boolean isParent = dataRoot.getLeft()==null;
@@ -269,16 +410,14 @@ public class RBTree<T extends Comparable<T>> {
      * 而如果被删除的节点是黑色的，这就需要进行进一步的调整来保证后续的树结构满足要求。
      * 这里我们只修正删除的节点是黑色的情况：
      *
-     * 调整思想：
+     * 删除操作的总体思想是从兄弟节点借调黑色节点使树保持局部的平衡，如果局部的平衡达到了，
+     * 就看整体的树是否是平衡的，如果不平衡就接着向上追溯调整。
      * 为了保证删除节点的父节点左右两边黑色节点数一致，需要重点关注父节点没删除的那一边节点是不是黑色。
-     * 如果删除后父亲节点另一边比删除的一边黑色多，就要想办法搞到平衡。
-     * 1、把父亲节点另一边（即删除节点的兄弟树）其中一个节点弄成红色，也少了一个黑色。
-     * 2、或者把另一边多的节点（染成黑色）转过来一个
      *
      * 1）、当前节点是黑色的，且兄弟节点是红色的（那么父节点和兄弟节点的子节点肯定是黑色的）；
      * 2）、当前节点是黑色的，且兄弟节点是黑色的，且兄弟节点的两个子节点均为黑色的；
-     * 3）、当前节点是黑色的，且兄弟节点是黑色的，且兄弟节点的左子节点是红色，右子节点时黑色的；
-     * 4）、当前节点是黑色的，且兄弟节点是黑色的，且兄弟节点的右子节点是红色，左子节点任意颜色。
+     * 3）、当前节点是黑色的，且兄弟节点是黑色的，且兄弟节点的左子节点是红色，右子节点时黑色的(兄弟节点在右边)；
+     * 4）、当前节点是黑色的，且兄弟节点是黑色的，且兄弟节点的右子节点是红色，左子节点任意颜色(兄弟节点在右边)。
      *
      * 以上四种情况中，2，3，4都是（当前节点是黑色的，且兄弟节点是黑色的）的子集。
      *
@@ -367,7 +506,7 @@ public class RBTree<T extends Comparable<T>> {
     }
 
     private boolean isRoot(RBTreeNode<T> node){
-        return root.getLeft() == node && node.getParent()==null;
+        return root == node && node.getParent()==null;
     }
 
     /**

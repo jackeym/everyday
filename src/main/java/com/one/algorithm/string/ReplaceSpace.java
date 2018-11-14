@@ -11,7 +11,7 @@ public class ReplaceSpace {
      * @param str
      * @return
      */
-    public String replaceSpace(StringBuffer str) {
+    public String replaceSpace(String str) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < str.length(); i++) {
             char s = str.charAt(i);
