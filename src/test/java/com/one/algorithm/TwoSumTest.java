@@ -1,6 +1,8 @@
 package com.one.algorithm;
 
 import com.alibaba.fastjson.JSON;
+import com.one.algorithm.array.TwoSum;
+import com.one.algorithm.string.LengthOfLongestSubstring;
 import org.junit.Test;
 
 public class TwoSumTest {

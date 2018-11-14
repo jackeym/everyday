@@ -1,4 +1,4 @@
-package com.one.algorithm.basic;
+package com.one.algorithm.tree;
 
 /**
  * 红黑树

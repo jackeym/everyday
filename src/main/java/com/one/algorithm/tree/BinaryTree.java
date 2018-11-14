@@ -1,4 +1,4 @@
-package com.one.algorithm.basic;
+package com.one.algorithm.tree;
 
 import java.util.Stack;
 
