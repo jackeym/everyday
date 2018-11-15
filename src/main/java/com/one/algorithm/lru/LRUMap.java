@@ -1,7 +1,12 @@
 package com.one.algorithm.lru;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * Function:
@@ -15,6 +20,8 @@ import java.util.Map;
  * @since JDK 1.8
  */
 public class LRUMap<K, V> {
+    private final static Logger LOGGER = LoggerFactory.getLogger(LRUMap.class);
+    
     private final Map<K, V> cacheMap = new HashMap<>();
 
     /**
@@ -38,6 +45,17 @@ public class LRUMap<K, V> {
      */
     private Node<K, V> tailer;
 
+
+    /**
+     * 超时时间
+     */
+    private final static Long EXPIRE_TIME = 60 * 60 * 1000L ;
+
+    /**
+     * 检查是否超期线程
+     */
+    private ExecutorService checkTimePool ;
+
     public LRUMap(int cacheSize) {
         this.cacheSize = cacheSize;
         //头结点的下一个结点为空
@@ -54,6 +72,21 @@ public class LRUMap<K, V> {
         //尾结点的下结点指向头结点
         tailer.next = header;
 
+        //开启一个线程检查最先放入队列的值是否超期
+        executeCheckTime();
+    }
+
+    /**
+     * 开启一个线程检查最先放入队列的值是否超期 设置为守护线程
+     */
+    private void executeCheckTime() {
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("check-thread-%d")
+                .setDaemon(true)
+                .build();
+        checkTimePool = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(1),namedThreadFactory,new ThreadPoolExecutor.AbortPolicy());
+        checkTimePool.execute(new CheckTimeThread()) ;
 
     }
 
@@ -76,7 +109,7 @@ public class LRUMap<K, V> {
 
     private void moveToHead(Node<K,V> node){
 
-        //如果是最后的一个节点
+        //如果是尾节点
         if (node.tail == null){
             node.next.tail = null ;
             tailer = node.next ;
@@ -181,10 +214,12 @@ public class LRUMap<K, V> {
         private V value;
         Node<K, V> tail;
         Node<K, V> next;
+        private Long updateTime ;
 
         public Node(K key, V value) {
             this.key = key;
             this.value = value;
+            this.updateTime = System.currentTimeMillis() ;
         }
 
         public Node() {
@@ -206,6 +241,14 @@ public class LRUMap<K, V> {
             this.value = value;
         }
 
+        public void setUpdateTime(Long updateTime) {
+            this.updateTime = updateTime;
+        }
+
+        public Long getUpdateTime() {
+            return updateTime;
+        }
+
     }
 
     @Override
@@ -222,5 +265,27 @@ public class LRUMap<K, V> {
 
 
         return sb.toString();
+    }
+
+    private class CheckTimeThread implements Runnable{
+
+        @Override
+        public void run() {
+            while (nodeCount > 0){
+                try {
+                    Node node = tailer;
+                    if (node == null){
+                        continue ;
+                    }
+                    Long updateTime = node.getUpdateTime() ;
+
+                    if ((updateTime - System.currentTimeMillis()) >= EXPIRE_TIME){
+                        delTail();
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("InterruptedException");
+                }
+            }
+        }
     }
 }
