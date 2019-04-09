@@ -27,7 +27,9 @@ import java.util.Queue;
 public class LevelOrder {
 
     public List<List<Integer>> levelOrder(TreeNode root) {
+        
         List<List<Integer>> wrapList = new LinkedList<List<Integer>>();
+        
         Queue<TreeNode> queue = new LinkedList<TreeNode>();
         
         if (null == root) return wrapList;
