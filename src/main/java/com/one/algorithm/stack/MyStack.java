@@ -1,16 +1,31 @@
 package com.one.algorithm.stack;
 
 /**
- * @author: one
+ * 栈接口抽象数据类型
  */
-public interface MyStack <E> extends Iterable<E> {
+public interface MyStack<T> {
 
-    MyStack<E> push(E e);
-
-    E pop() throws Exception;
-
+    /**
+     * 栈是否为空
+     * @return
+     */
     boolean isEmpty();
 
-    int size();
+    /**
+     * data元素入栈
+     * @param data
+     */
+    void push(T data);
 
+    /**
+     * 返回栈顶元素,未出栈
+     * @return
+     */
+    T peek();
+
+    /**
+     * 出栈,返回栈顶元素,同时从栈中移除该元素
+     * @return
+     */
+    T pop();
 }
