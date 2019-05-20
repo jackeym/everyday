@@ -1,6 +1,6 @@
 package com.one.multithread;
 
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 /**
  * 生产者消费者3
@@ -64,22 +64,38 @@ public class ProduceConsumer3 {
     {
         ProduceConsumer3 storage=new ProduceConsumer3();
 
-        for(int i=0;i<6;i++)
-        {
+        ExecutorService service = new ThreadPoolExecutor(15, 15, 0, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(100));;
+        for (int i = 0; i < 5; i++) {
             int finalI = i;
-            new Thread(new Runnable() {
+            service.submit(new Runnable() {
                 @Override
                 public void run() {
                     storage.produce(String.format("生成者%d:", finalI));
                 }
-            }).start();
+            });
         }
 
-        for(int i=0;i<4;i++)
-        {
+        for (int i = 0; i < 10; i++) {
             int finalI = i;
-            new Thread(()-> storage.consume(String.format("消费者%d:", finalI))).start();
+            service.submit(()-> storage.consume(String.format("消费者%d:", finalI)));
         }
+        
+//        for(int i=0;i<6;i++)
+//        {
+//            int finalI = i;
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    storage.produce(String.format("生成者%d:", finalI));
+//                }
+//            }).start();
+//        }
+//
+//        for(int i=0;i<4;i++)
+//        {
+//            int finalI = i;
+//            new Thread(()-> storage.consume(String.format("消费者%d:", finalI))).start();
+//        }
     }
     
 }

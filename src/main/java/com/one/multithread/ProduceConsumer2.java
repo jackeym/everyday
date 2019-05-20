@@ -1,6 +1,10 @@
 package com.one.multithread;
 
 import java.util.LinkedList;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -92,22 +96,38 @@ public class ProduceConsumer2 {
     {
         ProduceConsumer2 storage=new ProduceConsumer2();
 
-        for(int i=0;i<6;i++)
-        {
+        ExecutorService service = new ThreadPoolExecutor(15, 15, 0, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(100));;
+        for (int i = 0; i < 5; i++) {
             int finalI = i;
-            new Thread(new Runnable() {
+            service.submit(new Runnable() {
                 @Override
                 public void run() {
                     storage.produce(String.format("生成者%d:", finalI));
                 }
-            }).start();
+            });
         }
 
-        for(int i=0;i<4;i++)
-        {
+        for (int i = 0; i < 10; i++) {
             int finalI = i;
-            new Thread(()-> storage.consume(String.format("消费者%d:", finalI))).start();
+            service.submit(()-> storage.consume(String.format("消费者%d:", finalI)));
         }
+        
+//        for(int i=0;i<6;i++)
+//        {
+//            int finalI = i;
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    storage.produce(String.format("生成者%d:", finalI));
+//                }
+//            }).start();
+//        }
+//
+//        for(int i=0;i<4;i++)
+//        {
+//            int finalI = i;
+//            new Thread(()-> storage.consume(String.format("消费者%d:", finalI))).start();
+//        }
     }
     
 }

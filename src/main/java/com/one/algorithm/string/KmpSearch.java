@@ -42,15 +42,18 @@ public class KmpSearch {
 
 
     // a, b 分别是主串和模式串；n, m 分别是主串和模式串的长度。
-    public static int kmp2(char[] a, int n, char[] b, int m) {
+    public static int kmp2(char[] a, char[] b) {
+        int n = a.length;
+        int m = b.length;
+        
         int[] next = getNexts(b, m);
         int j = 0;
         for (int i = 0; i < n; ++i) {
             while (j > 0 && a[i] != b[j]) { // 一直找到 a[i] 和 b[j]
-                j = next[j - 1] + 1;
+                j = next[j - 1];
             }
             if (a[i] == b[j]) {
-                ++j;
+                j++;
             }
             if (j == m) { // 找到匹配模式串的了
                 return i - m + 1;
@@ -62,14 +65,14 @@ public class KmpSearch {
     // b 表示模式串，m 表示模式串的长度
     private static int[] getNexts(char[] b, int m) {
         int[] next = new int[m];
-        next[0] = -1;
-        int k = -1;
+        next[0] = 0;
+        int k = 0;
         for (int i = 1; i < m; ++i) {
-            while (k != -1 && b[k + 1] != b[i]) {
-                k = next[k];
+            while (k > 0 && b[k] != b[i]) {
+                k = next[k-1];
             }
-            if (b[k + 1] == b[i]) {
-                ++k;
+            if (b[k] == b[i]) {
+                k++;
             }
             next[i] = k;
         }
