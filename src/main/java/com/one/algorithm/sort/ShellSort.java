@@ -16,33 +16,37 @@ import java.util.Arrays;
 public class ShellSort {
     
     public void sort1(int[] a){
-        //增量gap，并逐步缩小增量
-        for (int gap = a.length/2; gap > 0 ; gap/=2) {
+        //增量dk，并逐步缩小增量
+        int dk = a.length/2;
+        while (dk >= 1){
             //从第gap个元素，逐个对其所在组进行直接插入排序操作
-            for (int i = gap; i < a.length; i++) {
+            for (int i = dk; i < a.length; i++) {
+                int temp = a[i];
                 int j = i;
-                int temp = a[j];
-                for (; j-gap>=0 && temp<a[j-gap]; j-=gap) {
+                for (; j-dk>=0 && temp<a[j-dk]; j-=dk) {
                     //移动法
-                    a[j] = a[j-gap];
+                    a[j] = a[j-dk];
                 }
                 a[j] = temp;
             }
+            dk = dk/2;
         }
     }
 
     public void sort2(int[] a){
-        //增量gap，并逐步缩小增量
-        for (int gap = a.length/2; gap > 0 ; gap/=2) {
+        //增量dk，并逐步缩小增量
+        int dk = a.length/2;
+        while (dk >= 1){
             //从第gap个元素，逐个对其所在组进行直接插入排序操作
-            for (int i = gap; i < a.length; i++) {
+            for (int i = dk; i < a.length; i++) {
+                int temp = a[i];
                 int j = i;
-                int temp = a[j];
-                for (; j-gap>=0 && temp<a[j-gap]; j-=gap) {
+                for (; j-dk>=0 && temp<a[j-dk]; j-=dk) {
                     //插入排序采用交换法
-                    swap(a,j,j-gap);
+                    swap(a,j,j-dk);
                 }
             }
+            dk = dk/2;
         }
     }
     
