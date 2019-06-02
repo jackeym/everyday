@@ -52,12 +52,12 @@ public class SampleSort {
     
     public void insertSort(int[] arr){
         for (int i = 1; i < arr.length; i++) {
-            int temp = arr[i];
-            int j = i;
-            for (; j >0 && temp<arr[j-1] ; j--) {
-                arr[j] = arr[j-1];
+            int temp = arr[i];  //要插入的数
+            int j = i;  //插入的位置
+            for (; j >0 && temp<arr[j-1] ; j--) {   // 如果插入的数比被插入的数小
+                arr[j] = arr[j-1];  //把arr[j-1]往后移
             }
-            arr[j] = temp;
+            arr[j] = temp;  //把插入的数放到合适的位置
         }
         
     }
