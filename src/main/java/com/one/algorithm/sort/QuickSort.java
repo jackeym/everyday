@@ -16,13 +16,13 @@ public class QuickSort {
     
     public void quickSort(int[] a, int low, int high){
         if (low < high){
-            int mid = getMiddle(a, low, high);
+            int mid = partion(a, low, high);
             quickSort(a, 0, mid-1);
             quickSort(a, mid+1, high);
         }
     }
     
-    public int getMiddle(int[] a, int low, int high){
+    public int partion(int[] a, int low, int high){
         int key = a[low];   //基准元素，排序中会空出来一个位置
         
         while (low<high){
