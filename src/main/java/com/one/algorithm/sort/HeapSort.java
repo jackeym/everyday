@@ -8,6 +8,42 @@ import java.util.Arrays;
  */
 public class HeapSort {
 
+    public static void sort2(int[] arr) {
+        //1.构建大顶堆
+        int n = arr.length - 1;
+        for (int i = (n- 1) / 2 ; i >= 0; i--) {
+            //从第一个非叶子结点从下至上，从右至左调整结构
+            adjustHeap(arr, i, n);
+        }
+        //2.调整堆结构+交换堆顶元素与末尾元素
+        while ( n > 0) {
+            swap(arr, 0, n--);//将堆顶元素与末尾元素进行交换
+            adjustHeap(arr, 0, n);//重新对堆进行调整
+        }
+
+    }
+
+    /**
+     * 调整大顶堆（下沉）
+     *
+     * @param arr
+     * @param k
+     * @param n
+     */
+    public static void adjustHeap(int[] arr, int k, int n) {
+        while (true){
+            int maxPos = k;     //最大元素下标
+            int left = 2 * k + 1;   //左节点
+            if (left <= n && arr[maxPos] < arr[left]) maxPos = left;    // 左节点大的话
+            if (left+1 <= n && arr[maxPos] < arr[left+1]) maxPos = left+1;  //右节点存在且大的话
+            if (maxPos == k) break; 
+
+            swap(arr, k, maxPos);
+            k = maxPos;
+            
+        }
+        
+    }
 
     public static void sort1(int[] arr) {
         int arrayLength = arr.length;
@@ -23,48 +59,10 @@ public class HeapSort {
     //对arr数组从0到lastIndex建大顶堆 
     private static void buildMaxHeap(int[] arr, int lastIndex) {
         // 从lastIndex处节点（最后一个节点）的父节点开始 
-        for (int i = (lastIndex - 1) / 2; i >= 0; i--) { 
+        for (int i = (lastIndex - 1) / 2; i >= 0; i--) {
             //下沉操作
             adjustHeap(arr, i, lastIndex);
         }
-    }
-
-
-    public static void sort2(int[] arr) {
-        //1.构建大顶堆
-        int N = arr.length - 1;
-        for (int i = N / 2 - 1; i >= 0; i--) {
-            //从第一个非叶子结点从下至上，从右至左调整结构
-            adjustHeap(arr, i, N);
-        }
-        //2.调整堆结构+交换堆顶元素与末尾元素
-        while ( N > 0) {
-            swap(arr, 0, N--);//将堆顶元素与末尾元素进行交换
-            adjustHeap(arr, 0, N);//重新对堆进行调整
-        }
-
-    }
-
-    /**
-     * 调整大顶堆（下沉）
-     *
-     * @param arr
-     * @param k
-     * @param N
-     */
-    public static void adjustHeap(int[] arr, int k, int N) {
-        while (k * 2 + 1 <= N) {
-            int biggerIndex = 2 * k + 1;    //k节点的左子节点的索引 
-            if (biggerIndex < N && arr[biggerIndex] < arr[biggerIndex + 1]) {
-                biggerIndex++;
-            } 
-            if (!(arr[k] < arr[biggerIndex])) {
-                break;
-            }
-            swap(arr, k, biggerIndex);
-            k = biggerIndex;
-        }
-        
     }
 
     /**

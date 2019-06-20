@@ -52,7 +52,7 @@ public class ThreadPrintABC1 {
                         System.out.print(name);
                         count--;
 
-                        self.notify();
+                        self.notifyAll();
                     }
                     try {
                         prev.wait();

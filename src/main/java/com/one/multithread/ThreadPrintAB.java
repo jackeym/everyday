@@ -16,12 +16,12 @@ public class ThreadPrintAB {
     
     public static void main(String[] args) {
         // 方式一
-//        Thread thread1 = new Thread(new MyThread("A"));
-//        Thread thread2 = new Thread(new MyThread("B"));
+        Thread thread1 = new Thread(new MyThread("A"));
+        Thread thread2 = new Thread(new MyThread("B"));
         
         // 方式二
-        Thread thread1 = new Thread(new MyThread2("A",condition1,condition2));
-        Thread thread2 = new Thread(new MyThread2("B",condition2,condition1));
+//        Thread thread1 = new Thread(new MyThread2("A",condition1,condition2));
+//        Thread thread2 = new Thread(new MyThread2("B",condition2,condition1));
         thread1.start();
         thread2.start();
 
